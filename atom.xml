@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>语冰的小站</title>
+  <icon>http://feutis.github.io/favicon.png</icon>
+  <subtitle>like a stone</subtitle>
+  <link href="http://feutis.github.io/atom.xml" rel="self"/>
+  
+  <link href="http://feutis.github.io/"/>
+  <updated>2022-02-27T16:33:25.466Z</updated>
+  <id>http://feutis.github.io/</id>
+  
+  <author>
+    <name>语冰</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>hexo blog搭建方案</title>
+    <link href="http://feutis.github.io/%E5%89%8D%E7%AB%AF/hexo-blog%E6%90%AD%E5%BB%BA%E6%96%B9%E6%A1%88/"/>
+    <id>http://feutis.github.io/%E5%89%8D%E7%AB%AF/hexo-blog%E6%90%AD%E5%BB%BA%E6%96%B9%E6%A1%88/</id>
+    <published>2022-02-27T16:33:20.000Z</published>
+    <updated>2022-02-27T16:33:25.466Z</updated>
+    
+    
+    <summary type="html">在windows中采用wsl（不好用，已弃用）+（typora markdown编辑）+（picgo gitee图床）+（katex公式）+（github发布）的blog解决方案</summary>
+    
+    
+    
+    <category term="杂项" scheme="http://feutis.github.io/categories/%E6%9D%82%E9%A1%B9/"/>
+    
+    
+    <category term="学习笔记" scheme="http://feutis.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="picgo" scheme="http://feutis.github.io/tags/picgo/"/>
+    
+    <category term="katex" scheme="http://feutis.github.io/tags/katex/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>四元数</title>
+    <link href="http://feutis.github.io/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/%E5%9B%9B%E5%85%83%E6%95%B0/"/>
+    <id>http://feutis.github.io/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/%E5%9B%9B%E5%85%83%E6%95%B0/</id>
+    <published>2021-11-01T13:01:00.000Z</published>
+    <updated>2022-02-26T15:35:54.510Z</updated>
+    
+    
+    <summary type="html">重新整理了下四元数的内容，对以四元数为基础的轴角法表示进行了数学推导</summary>
+    
+    
+    
+    <category term="四轴飞行器" scheme="http://feutis.github.io/categories/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/"/>
+    
+    
+    <category term="-四轴飞行器 -四元数" scheme="http://feutis.github.io/tags/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8-%E5%9B%9B%E5%85%83%E6%95%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ucosii学习2-临界区</title>
+    <link href="http://feutis.github.io/ucosii/ucosii2/"/>
+    <id>http://feutis.github.io/ucosii/ucosii2/</id>
+    <published>2021-04-02T09:07:27.000Z</published>
+    <updated>2022-02-26T08:17:16.885Z</updated>
+    
+    
+    <summary type="html">临界区是什么？为什么定义了三种进入方式却只能在代码里找到第一种方式？我们会结合有关c语言的运行时栈的有关知识来探讨三种方法的可行性。</summary>
+    
+    
+    
+    <category term="ucosii" scheme="http://feutis.github.io/categories/ucosii/"/>
+    
+    
+    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
+    
+    <category term="stm32" scheme="http://feutis.github.io/tags/stm32/"/>
+    
+    <category term="学习笔记" scheme="http://feutis.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ucosii学习1-骗过编译器</title>
+    <link href="http://feutis.github.io/ucosii/ucosii1/"/>
+    <id>http://feutis.github.io/ucosii/ucosii1/</id>
+    <published>2021-04-01T14:04:38.000Z</published>
+    <updated>2022-02-26T08:12:38.732Z</updated>
+    
+    
+    <summary type="html">我们可以从ucosii官网下载到ucosii的源代码，通过一次次的编译，观察错误信息，结合ucosii工程文件的架构，我们可以建立起一个初步的只能骗过编译器的ucosii版本。</summary>
+    
+    
+    
+    <category term="ucosii" scheme="http://feutis.github.io/categories/ucosii/"/>
+    
+    
+    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
+    
+    <category term="stm32" scheme="http://feutis.github.io/tags/stm32/"/>
+    
+    <category term="学习笔记" scheme="http://feutis.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>姿态解算</title>
+    <link href="http://feutis.github.io/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/%E5%A7%BF%E6%80%81%E8%A7%A3%E7%AE%97/"/>
+    <id>http://feutis.github.io/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/%E5%A7%BF%E6%80%81%E8%A7%A3%E7%AE%97/</id>
+    <published>2021-04-25T13:01:16.000Z</published>
+    <updated>2022-02-26T08:11:06.277Z</updated>
+    
+    
+    <summary type="html">记录下自己理解姿态解算的过程吧，从动力学模型到欧拉角与四元数，其实还没有完全写完，四元数最后使用的公式的证明还没用给，会补上的会补上的。</summary>
+    
+    
+    
+    <category term="四轴飞行器" scheme="http://feutis.github.io/categories/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8/"/>
+    
+    
+    <category term="-四轴飞行器 -四元数" scheme="http://feutis.github.io/tags/%E5%9B%9B%E8%BD%B4%E9%A3%9E%E8%A1%8C%E5%99%A8-%E5%9B%9B%E5%85%83%E6%95%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>linker_script</title>
+    <link href="http://feutis.github.io/arm/linker-script/"/>
+    <id>http://feutis.github.io/arm/linker-script/</id>
+    <published>2021-04-29T09:14:18.000Z</published>
+    <updated>2022-02-26T07:44:34.486Z</updated>
+    
+    
+    <summary type="html">通过对linker script官方文档的整理理解stm32f401的链接文件</summary>
+    
+    
+    
+    <category term="arm" scheme="http://feutis.github.io/categories/arm/"/>
+    
+    
+    <category term="arm" scheme="http://feutis.github.io/tags/arm/"/>
+    
+    <category term="linker script" scheme="http://feutis.github.io/tags/linker-script/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>makefile</title>
+    <link href="http://feutis.github.io/arm/makefile/"/>
+    <id>http://feutis.github.io/arm/makefile/</id>
+    <published>2021-04-28T17:00:44.000Z</published>
+    <updated>2022-02-25T15:18:12.347Z</updated>
+    
+    
+    <summary type="html">makefile的学习记录</summary>
+    
+    
+    
+    <category term="tools" scheme="http://feutis.github.io/categories/tools/"/>
+    
+    
+    <category term="makefile gun" scheme="http://feutis.github.io/tags/makefile-gun/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>js学习笔记</title>
+    <link href="http://feutis.github.io/%E5%89%8D%E7%AB%AF/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    <id>http://feutis.github.io/%E5%89%8D%E7%AB%AF/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
+    <published>2021-04-02T09:03:25.000Z</published>
+    <updated>2022-02-25T15:18:12.339Z</updated>
+    
+    
+    <summary type="html">记录下自己学前端的一点东西吧，发现自己好像不是写前端的料，就当有趣了。</summary>
+    
+    
+    
+    <category term="前端" scheme="http://feutis.github.io/categories/%E5%89%8D%E7%AB%AF/"/>
+    
+    
+    <category term="前端" scheme="http://feutis.github.io/tags/%E5%89%8D%E7%AB%AF/"/>
+    
+    <category term="js" scheme="http://feutis.github.io/tags/js/"/>
+    
+  </entry>
+  
+</feed>

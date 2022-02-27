@@ -1,0 +1,769 @@
+<!DOCTYPE html><html lang="zh-CN"><head><!-- hexo injector head_begin start --><link href="/css/hexo-tag-common.css" rel="stylesheet"/><!-- hexo injector head_begin end --><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="语冰"><meta name="copyright" content="语冰"><meta name="generator" content="Hexo 6.0.0"><meta name="theme" content="hexo-theme-yun"><title>ucosii学习1-骗过编译器 | 语冰的小站</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.2.4/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/@unocss/runtime/mini.global.js"></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"feutis.github.io","root":"/","title":"云游君的小站","version":"1.8.10","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"fireworks":{"colors":null},"vendors":{"darken":"https://cdn.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><link rel="alternate" href="/atom.xml" title="语冰的小站" type="application/atom+xml"><script>(function(){
+  var bp = document.createElement('script');
+  var curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else {
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})();</script><meta name="description" content="我们可以从ucosii官网下载到ucosii的源代码，通过一次次的编译，观察错误信息，结合ucosii工程文件的架构，我们可以建立起一个初步的只能骗过编译器的ucosii版本。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucosii学习1-骗过编译器">
+<meta property="og:url" content="http://feutis.github.io/ucosii/ucosii1/index.html">
+<meta property="og:site_name" content="语冰的小站">
+<meta property="og:description" content="我们可以从ucosii官网下载到ucosii的源代码，通过一次次的编译，观察错误信息，结合ucosii工程文件的架构，我们可以建立起一个初步的只能骗过编译器的ucosii版本。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261611897.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261611217.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261611424.png">
+<meta property="og:image" content="d:%5CDesktop%5Cimage_warehouse%5Cimg%5Cimage-20210309210144330.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261611976.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612222.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612068.png">
+<meta property="og:image" content="https://fffyutt.gitee.io/image_warehouse/ucosii1/image-20210309215209125.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612471.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612381.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612226.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612498.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612045.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612697.png">
+<meta property="og:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261612158.png">
+<meta property="article:published_time" content="2021-04-01T14:04:38.000Z">
+<meta property="article:modified_time" content="2022-02-26T08:12:38.732Z">
+<meta property="article:author" content="语冰">
+<meta property="article:tag" content="ucosii">
+<meta property="article:tag" content="stm32">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/fffyutt/img/raw/blog/img/202202261611897.png"><script>(function() {
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head><body><script defer src="https://cdn.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="语冰"><img width="96" loading="lazy" src="/images/avatar.jpg" alt="语冰"><span class="site-author-status" title="Looking for dawn.">🌑</span></a><div class="site-author-name"><a href="/about/">语冰</a></div><span class="site-name">语冰的小站</span><sub class="site-subtitle">like a stone</sub><div class="site-desciption">积跬步以至千里</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">8</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">6</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">11</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-settings-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://jq.qq.com/?_wv=1027&amp;k=g4CvG7jI" title="QQ群" target="_blank" style="color:#12B7F5"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-qq-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/feutis" title="GitHub" target="_blank" style="color:#6e5494"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-github-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="1276018778@qq.com" title="E-Mail" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-genderless-line"></use></svg></a><a class="links-item hty-icon-button" href="/girls/" title="喜欢的女孩子" style="color:hotpink"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-women-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%B9%95"><span class="toc-number">1.</span> <span class="toc-text"> 开幕</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E7%AE%80%E4%BB%8B"><span class="toc-number">2.</span> <span class="toc-text"> 内容简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">3.</span> <span class="toc-text"> 正文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E9%AA%8C%E8%AF%81"><span class="toc-number">3.1.</span> <span class="toc-text"> 工程验证</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="http://feutis.github.io/ucosii/ucosii1/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="语冰"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="语冰的小站"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">ucosii学习1-骗过编译器<a class="post-edit-link" href="https://github.com/feutis/feutis.github.io_posts/ucosii/ucosii1.md" target="_blank" title="编辑" rel="noopener"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-edit-line"></use></svg></a></h1><div class="post-meta"><div class="post-time"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="创建时间：2021-04-01 22:04:38" itemprop="dateCreated datePublished" datetime="2021-04-01T22:04:38+08:00">2021-04-01</time><span class="post-meta-divider">-</span><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-2-line"></use></svg></span> <time title="修改时间：2022-02-26 16:12:38" itemprop="dateModified" datetime="2022-02-26T16:12:38+08:00">2022-02-26</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/ucosii/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">ucosii</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/ucosii/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">ucosii</span></a><a class="tag-item" href="/tags/stm32/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">stm32</span></a><a class="tag-item" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">学习笔记</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h2 id="开幕"><a class="markdownIt-Anchor" href="#开幕"></a> 开幕</h2>
+<p>本文用作记录自己学习ucosii并在四轴飞行器综合课程设计的学习与实践过程，主要结合cotex-m4内核的STM32F401RE板子进行ucosii的学习与移植。学习的过程很痛苦，希望自己能够坚持记录到最后！</p>
+<h2 id="内容简介"><a class="markdownIt-Anchor" href="#内容简介"></a> 内容简介</h2>
+<p>我们可以从ucosii官网下载到ucosii的源代码，通过一次次的编译，观察错误信息，结合ucosii工程文件的架构，我们可以建立起一个初步的只能骗过编译器的ucosii版本。</p>
+<h2 id="正文"><a class="markdownIt-Anchor" href="#正文"></a> 正文</h2>
+<p>为了构建起ucosii的工程文件，我们首先要新建一个工程，按照ucosii工程文件的样子添加目录，编译路径以及启动文件。</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261611897.png" alt="image-20210309203531760" / loading="lazy"></p>
+<p>在编译CORE内的文件时，发现缺少文件，我们可以打开第一个报错的文件</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;app_cfg.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_cfg.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_cpu.h></span></span></code></pre>
+<p>在44行的include里就错了，我们发现这后面还有两个include，里面的文件都是工程中没有的，我们直接按照之前结构加入文件(都是空的)</p>
+<p>这时我们会得到一个这样的文件夹，其中除CORE内的文件外，其他文件夹内的文件都是空的。</p>
+<p>根据良好的习惯，我们在头文件中都加入下面这行代码放置重复编译</p>
+<pre class="language-none"><code class="language-none">#pragma once</code></pre>
+<p>你想用下面这种方法我也不拦着你，这个和官方使用的方法是一样的，二者的区别自行查找</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">OS_CFG_H</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_CFG_H</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span></code></pre>
+<p>再次编译，编译之前注意所有的文件后面加个空行，这个是老版本gcc的问题了，可见keil自带的编译器版本比较老，只能将就着用了</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261611217.png" alt="image-20210309205046991" / loading="lazy"></p>
+<p>emmmm一堆undefined，好吧让我们去找到他们。</p>
+<p>在os_cpu.h加入如下代码</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span>  BOOLEAN<span class="token punctuation">;</span>
+<span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span>  INT8U<span class="token punctuation">;</span>			<span class="token comment">/* Unsigned  8 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">signed</span>   <span class="token keyword">char</span>  INT8S<span class="token punctuation">;</span>			<span class="token comment">/* Signed    8 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">short</span> INT16U<span class="token punctuation">;</span>			<span class="token comment">/* Unsigned 16 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">signed</span>   <span class="token keyword">short</span> INT16S<span class="token punctuation">;</span>			<span class="token comment">/* Signed   16 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span>   INT32U<span class="token punctuation">;</span>			<span class="token comment">/* Unsigned 32 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">signed</span>   <span class="token keyword">int</span>   INT32S<span class="token punctuation">;</span>			<span class="token comment">/* Signed   32 bit quantity       */</span>
+<span class="token keyword">typedef</span> <span class="token keyword">float</span>          FP32<span class="token punctuation">;</span>			<span class="token comment">/* Single precision floating point*/</span>
+<span class="token keyword">typedef</span> <span class="token keyword">double</span>         FP64<span class="token punctuation">;</span>			<span class="token comment">/* Double precision floating point*/</span>
+
+<span class="token comment">//STM32是32位位宽的,这里OS_STK和OS_CPU_SR都应该为32位数据类型</span>
+<span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span>   OS_STK<span class="token punctuation">;</span>			<span class="token comment">/* Each stack entry is 32-bit wide*/</span>
+<span class="token keyword">typedef</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span>   OS_CPU_SR<span class="token punctuation">;</span>		<span class="token comment">/* Define size of CPU status register*/</span>
+</code></pre>
+<p>再次编译</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261611424.png" alt="image-20210309210015435" / loading="lazy"></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token number">672</span>   OS_EXT  OS_PRIO           OSRdyTbl<span class="token punctuation">[</span>OS_RDY_TBL_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>       <span class="token comment">/* Table of tasks which are ready to run    */</span></code></pre>
+<p>好像和OS_LOWEST_PRIO没什么关系，用vscode试试</p>
+<p><img src="D:%5CDesktop%5Cimage_warehouse%5Cimg%5Cimage-20210309210144330.png" alt="image-20210309210144330" / loading="lazy"></p>
+<p>ok那就还是没有定义的问题，我们再去找找这段代码，在os_dfg.h里面找到了，看不懂，直接照抄</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">OS_CFG_H</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_CFG_H</span></span>
+
+
+                                       <span class="token comment">/* ---------------------- MISCELLANEOUS ----------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_APP_HOOKS_EN</span>           <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Application-defined hooks are called from the uC/OS-II hooks */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_ARG_CHK_EN</span>             <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) argument checking                  */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_CPU_HOOKS_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* uC/OS-II hooks are found in the processor port files         */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_DEBUG_EN</span>               <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Enable(1) debug variables                                    */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_EVENT_MULTI_EN</span>         <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Include code for OSEventPendMulti()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_EVENT_NAME_EN</span>          <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Enable names for Sem, Mutex, Mbox and Q                      */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_LOWEST_PRIO</span>           <span class="token expression"><span class="token number">63u</span>   </span><span class="token comment">/* Defines the lowest priority that can be assigned ...         */</span></span>
+                                       <span class="token comment">/* ... MUST NEVER be higher than 254!                           */</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MAX_EVENTS</span>            <span class="token expression"><span class="token number">10u</span>   </span><span class="token comment">/* Max. number of event control blocks in your application      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MAX_FLAGS</span>              <span class="token expression"><span class="token number">5u</span>   </span><span class="token comment">/* Max. number of Event Flag Groups    in your application      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MAX_MEM_PART</span>           <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Max. number of memory partitions                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MAX_QS</span>                 <span class="token expression"><span class="token number">5u</span>   </span><span class="token comment">/* Max. number of queue control blocks in your application      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MAX_TASKS</span>             <span class="token expression"><span class="token number">10u</span>   </span><span class="token comment">/* Max. number of tasks in your application, MUST be >= 2       */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SCHED_LOCK_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Include code for OSSchedLock() and OSSchedUnlock()           */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TICK_STEP_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable tick stepping feature for uC/OS-View                  */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TICKS_PER_SEC</span>       	<span class="token expression"><span class="token number">200u</span>   </span><span class="token comment">/* Set the number of ticks in one second                        */</span></span>
+
+
+                                       <span class="token comment">/* --------------------- TASK STACK SIZE ---------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_TMR_STK_SIZE</span>    <span class="token expression"><span class="token number">128u</span>   </span><span class="token comment">/* Timer      task stack size (# of OS_STK wide entries)        */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_STAT_STK_SIZE</span>   <span class="token expression"><span class="token number">128u</span>   </span><span class="token comment">/* Statistics task stack size (# of OS_STK wide entries)        */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_IDLE_STK_SIZE</span>   <span class="token expression"><span class="token number">128u</span>   </span><span class="token comment">/* Idle       task stack size (# of OS_STK wide entries)        */</span></span>
+
+
+                                       <span class="token comment">/* --------------------- TASK MANAGEMENT ---------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_CHANGE_PRIO_EN</span>    <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskChangePrio()                      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_CREATE_EN</span>         <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskCreate()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_CREATE_EXT_EN</span>     <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskCreateExt()                       */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_DEL_EN</span>            <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskDel()                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_NAME_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Enable task names                                        */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_PROFILE_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include variables in OS_TCB for profiling                */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_QUERY_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskQuery()                           */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_REG_TBL_SIZE</span>      <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Size of task variables array (#of INT32U entries)        */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_STAT_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Enable (1) or Disable(0) the statistics task             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_STAT_STK_CHK_EN</span>   <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Check task stacks from statistic task                    */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_SUSPEND_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskSuspend() and OSTaskResume()      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TASK_SW_HOOK_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTaskSwHook()                          */</span></span>
+
+
+                                       <span class="token comment">/* ----------------------- EVENT FLAGS ------------------------ */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_EN</span>                <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for EVENT FLAGS    */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_ACCEPT_EN</span>         <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSFlagAccept()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_DEL_EN</span>            <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSFlagDel()                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_NAME_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Enable names for event flag group                        */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_QUERY_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSFlagQuery()                           */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAG_WAIT_CLR_EN</span>       <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Include code for Wait on Clear EVENT FLAGS                   */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_FLAGS_NBITS</span>           <span class="token expression"><span class="token number">16u</span>   </span><span class="token comment">/* Size in #bits of OS_FLAGS data type (8, 16 or 32)            */</span></span>
+
+
+                                       <span class="token comment">/* -------------------- MESSAGE MAILBOXES --------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_EN</span>                <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for MAILBOXES      */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_ACCEPT_EN</span>         <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxAccept()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_DEL_EN</span>            <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxDel()                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_PEND_ABORT_EN</span>     <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxPendAbort()                       */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_POST_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxPost()                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_POST_OPT_EN</span>       <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxPostOpt()                         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MBOX_QUERY_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMboxQuery()                           */</span></span>
+
+
+                                       <span class="token comment">/* --------------------- MEMORY MANAGEMENT -------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MEM_EN</span>                 <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for MEMORY MANAGER */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MEM_NAME_EN</span>            <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Enable memory partition names                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MEM_QUERY_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMemQuery()                            */</span></span>
+
+
+                                       <span class="token comment">/* ---------------- MUTUAL EXCLUSION SEMAPHORES --------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MUTEX_EN</span>               <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for MUTEX          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MUTEX_ACCEPT_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMutexAccept()                         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MUTEX_DEL_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMutexDel()                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_MUTEX_QUERY_EN</span>         <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSMutexQuery()                          */</span></span>
+
+
+                                       <span class="token comment">/* ---------------------- MESSAGE QUEUES ---------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_EN</span>                   <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for QUEUES         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_ACCEPT_EN</span>            <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQAccept()                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_DEL_EN</span>               <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQDel()                                */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_FLUSH_EN</span>             <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQFlush()                              */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_PEND_ABORT_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQPendAbort()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_POST_EN</span>              <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQPost()                               */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_POST_FRONT_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQPostFront()                          */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_POST_OPT_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQPostOpt()                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_Q_QUERY_EN</span>             <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSQQuery()                              */</span></span>
+
+
+                                       <span class="token comment">/* ------------------------ SEMAPHORES ------------------------ */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_EN</span>                 <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for SEMAPHORES     */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_ACCEPT_EN</span>          <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*    Include code for OSSemAccept()                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_DEL_EN</span>             <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*    Include code for OSSemDel()                               */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_PEND_ABORT_EN</span>      <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*    Include code for OSSemPendAbort()                         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_QUERY_EN</span>           <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*    Include code for OSSemQuery()                             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_SEM_SET_EN</span>             <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*    Include code for OSSemSet()                               */</span></span>
+
+
+                                       <span class="token comment">/* --------------------- TIME MANAGEMENT ---------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TIME_DLY_HMSM_EN</span>       <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTimeDlyHMSM()                         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TIME_DLY_RESUME_EN</span>     <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTimeDlyResume()                       */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TIME_GET_SET_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTimeGet() and OSTimeSet()             */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TIME_TICK_HOOK_EN</span>      <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Include code for OSTimeTickHook()                        */</span></span>
+
+
+                                       <span class="token comment">/* --------------------- TIMER MANAGEMENT --------------------- */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TMR_EN</span>                 <span class="token expression"><span class="token number">0u</span>   </span><span class="token comment">/* Enable (1) or Disable (0) code generation for TIMERS         */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TMR_CFG_MAX</span>           <span class="token expression"><span class="token number">16u</span>   </span><span class="token comment">/*     Maximum number of timers                                 */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TMR_CFG_NAME_EN</span>        <span class="token expression"><span class="token number">1u</span>   </span><span class="token comment">/*     Determine timer names                                    */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TMR_CFG_WHEEL_SIZE</span>     <span class="token expression"><span class="token number">8u</span>   </span><span class="token comment">/*     Size of timer wheel (#Spokes)                            */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">OS_TMR_CFG_TICKS_PER_SEC</span> <span class="token expression"><span class="token number">10u</span>   </span><span class="token comment">/*     Rate at which timer management task runs (Hz)            */</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+</code></pre>
+<p>再次编译，注意到这次出现了一种compiling警告和一种linking错误，似乎，前进了一大步？</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261611976.png" alt="image-20210309210959168" / loading="lazy"></p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612222.png" alt="image-20210309211022041" / loading="lazy"></p>
+<p>观察下警告类型，只有两条</p>
+<pre class="language-none"><code class="language-none">warning:  #223-D: function &quot;OS_EXIT_CRITICAL&quot; declared implicitly
+warning:  #223-D: function &quot;OS_ENTER_CRITICAL&quot; declared implicitly</code></pre>
+<p>先处理警告，用vscode找到这俩函数在什么位置</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span>  <span class="token macro-name function">OS_ENTER_CRITICAL</span><span class="token expression"><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token punctuation">&#123;</span>cpu_sr <span class="token operator">=</span> <span class="token function">OS_CPU_SR_Save</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token punctuation">&#125;</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span>  <span class="token macro-name function">OS_EXIT_CRITICAL</span><span class="token expression"><span class="token punctuation">(</span><span class="token punctuation">)</span>   <span class="token punctuation">&#123;</span><span class="token function">OS_CPU_SR_Restore</span><span class="token punctuation">(</span>cpu_sr<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token punctuation">&#125;</span></span></span></code></pre>
+<p>挺好，等待，这后面的OS_CPU_SR_Save()什么的又是啥？</p>
+<p>我们又在os_cpu.h里找到了这个东西，好，一起加进去</p>
+<pre class="language-none"><code class="language-none">OS_CPU_SR  OS_CPU_SR_Save(void);
+void       OS_CPU_SR_Restore(OS_CPU_SR cpu_sr);</code></pre>
+<p>真不错，加进去以后又开始报编译error了。。回到原点</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612068.png" alt="image-20210309212602348" / loading="lazy"></p>
+<p>看看，绝大多数错误是cpu_sr未定义，确实，刚刚只注意到第一层，没看到第二层，少看了个cpu_sr。</p>
+<p>那么问题来了，这又是个啥？观察我们的参考文件，再上网查一查，我们会在os_time.c等文件里发现这个的定义(很多里面都有)</p>
+<pre class="language-none"><code class="language-none">#if OS_CRITICAL_METHOD &#x3D;&#x3D; 3u                     &#x2F;* Allocate storage for CPU status register           *&#x2F;
+    OS_CPU_SR  cpu_sr &#x3D; 0u;
+#endif</code></pre>
+<p>但是编译的时候没有找到这些的定义，显然是因为没有定义OS_CRITICAL_METHOD，对我们刚刚加进去的两部分稍作修改，加入OS_CRITICAL_METHOD定义即可，顺手把人家的注释也加进去了</p>
+<pre class="language-none"><code class="language-none">&#x2F;&#x2F;OS_CRITICAL_METHOD &#x3D; 1 :直接使用处理器的开关中断指令来实现宏 
+&#x2F;&#x2F;OS_CRITICAL_METHOD &#x3D; 2 :利用堆栈保存和恢复CPU的状态 
+&#x2F;&#x2F;OS_CRITICAL_METHOD &#x3D; 3 :利用编译器扩展功能获得程序状态字，保存在局部变量cpu_sr
+
+#define  OS_CRITICAL_METHOD   3	 	&#x2F;&#x2F;进入临界段的方法
+
+#if OS_CRITICAL_METHOD &#x3D;&#x3D; 3
+#define  OS_ENTER_CRITICAL()  &#123;cpu_sr &#x3D; OS_CPU_SR_Save();&#125;
+#define  OS_EXIT_CRITICAL()   &#123;OS_CPU_SR_Restore(cpu_sr);&#125;
+
+OS_CPU_SR  OS_CPU_SR_Save(void);
+void       OS_CPU_SR_Restore(OS_CPU_SR cpu_sr);
+#endif</code></pre>
+<p>继续编译！！四种编译warning（有一个没截图，反正你现在不发现马上也发现了）和一种链接error</p>
+<p><img src="https://fffyutt.gitee.io/image_warehouse/ucosii1/image-20210309215209125.png" alt="image-20210309215209125" / loading="lazy"></p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612471.png" alt="image-20210309215219516" / loading="lazy"></p>
+<p>还是先处理warning吧，下面的链接error刚刚已经出现过了但是我没有处理</p>
+<p>在os_cpu.h加入四个函数的定义即可解决warning，加入部分如下</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//任务切换宏,由汇编实现.</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span>  <span class="token macro-name function">OS_TASK_SW</span><span class="token expression"><span class="token punctuation">(</span><span class="token punctuation">)</span>         <span class="token function">OSCtxSw</span><span class="token punctuation">(</span><span class="token punctuation">)</span></span></span>
+<span class="token keyword">void</span>       <span class="token function">OSCtxSw</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">void</span>       <span class="token function">OSIntCtxSw</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">void</span>       <span class="token function">OSStartHighRdy</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>接下来处理linking error，观察下，全都是ucos_ii.o和别的文件重复定义了，进去看看这是个啥</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span>  <span class="token macro-name">OS_GLOBALS</span>                           <span class="token comment">/* Declare GLOBAL variables                              */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ucos_ii.h></span></span>
+
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span>  <span class="token macro-name">OS_MASTER_FILE</span>                       <span class="token comment">/* Prevent the following files from including includes.h */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_core.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_flag.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_mbox.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_mem.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_mutex.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_q.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_sem.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_task.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_time.c></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;os_tmr.c></span></span>
+	 	   	  		 			 	  </code></pre>
+<p>这就是之前所有的头文件啊，简单理解下，这个文件不应该出现在工程里，借用我查到的一句话：</p>
+<p>文件/ucosii1.c包含了所有其它ucos的源文件, 只需要编译它就可以了, 其它的就不用编译了.  也可以把/ucosii1.c文件删除.</p>
+<p>而我们是直接用keil进行编译的，就，删了就好了。所以我们把他删了，继续编译</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612381.png" alt="image-20210309222311740" / loading="lazy"></p>
+<p>没有加main函数，那就加上</p>
+<p>没有定义一系列的hook函数，那就先把上面提到的一堆hook和OSTaskInit()加到os_cpu_c.c(别问为什么加到这里，别人就是这么加的，其实加到哪都可以，看你心情)</p>
+<p>刚刚我们加到os_cpu.h里面的一些函数只有定义没有实现，那先写个c把这些实现了(实际上这部分是用汇编完成的)</p>
+<p>另外现在（其实在一开始）我们要加入BSP部分内容了，主要包括启动文件，各种头文件，以及中断函数的定义等等</p>
+<p>经过数次编译测试，需要包含以下文件（其中文件我用文件名在我电脑上搜了一下，发现stm32cube里提供了完整的头文件支持，直接找到丢进去就好了）</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612226.png" alt="image-20210310003527737" / loading="lazy"></p>
+<p>需要在app文件夹下添加main.c，内容如下</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+</code></pre>
+<p>需要在os_cpu.h里添加有关OS_TASK_SW() 的定义，如下</p>
+<pre class="language-none"><code class="language-none">#define  OS_TASK_SW()         OSCtxSw()</code></pre>
+<p>需要在port文件夹下添加汇编文件os_cpu_a.asm，内容如下。其中，BX  LR 用途与 renturn 0；相同，用于函数返回，后续在补充硬件部分函数时会有对arm处理器硬件知识的补充，读者也可以自行搜索。</p>
+<pre class="language-none"><code class="language-none">OS_CPU_SR_Save
+    BX LR
+
+OS_CPU_SR_Restore
+    BX LR
+
+OSStartHighRdy
+    BX LR
+
+OSCtxSw
+    BX LR
+
+OSIntCtxSw
+    BX LR</code></pre>
+<p>需要在port文件夹下添加c文件os_cpu_c.c，内容如下</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"includes.h"</span></span>
+
+<span class="token keyword">void</span>  <span class="token function">OSInitHookBegin</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSInitHookEnd</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTaskCreateHook</span> <span class="token punctuation">(</span>OS_TCB <span class="token operator">*</span>ptcb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTaskDelHook</span> <span class="token punctuation">(</span>OS_TCB <span class="token operator">*</span>ptcb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTaskIdleHook</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTaskStatHook</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+OS_STK <span class="token operator">*</span><span class="token function">OSTaskStkInit</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>task<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>p_arg<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token constant">NULL</span><span class="token operator">*</span>p_arg<span class="token punctuation">,</span> OS_STK <span class="token operator">*</span>ptos<span class="token punctuation">,</span> INT16U opt<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    OS_STK<span class="token operator">*</span> stk<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> stk<span class="token punctuation">;</span> 
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTaskSwHook</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTCBInitHook</span> <span class="token punctuation">(</span>OS_TCB <span class="token operator">*</span>ptcb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span>  <span class="token function">OSTimeTickHook</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">OSTaskReturnHook</span><span class="token punctuation">(</span>OS_TCB <span class="token operator">*</span>ptcb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+<span class="token punctuation">&#125;</span>
+</code></pre>
+<p>其实就是上面报的缺什么函数补什么函数而已，继续编译！！</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612498.png" alt="image-20210310010513491" / loading="lazy"></p>
+<p>这次，emmm，看不懂，至少知道是在汇编文件里出问题了，去查下翻一下先，大意就是有个label他不认识，用查到的原话来说：</p>
+<p>出现这个问题的，基本上是因为使用汇编的格式不对</p>
+<p>那就，要先看下这个汇编语言的格式了，联想到上学期学的汇编开始要定义什么代码段数据段堆栈段之类的，估计是少了这个。</p>
+<p>反正就，加了这个在汇编文件的开始这个，有关堆栈分段对齐的定义，以及指令集等的定义</p>
+<pre class="language-none"><code class="language-none">PRESERVE8 
+
+AREA    |.text|, CODE, READONLY
+      THUMB </code></pre>
+<p>继续build</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612045.png" alt="image-20210310011115486" / loading="lazy"></p>
+<p>少个end，那就加上</p>
+<p>后面没有定义这个函数？可是我们明明已经把这些加进去了啊！</p>
+<p>实际上是因为没有添加类似c语言中include的一样的东西，没能将在汇编文件中定义的函数和os_core.o链接起来</p>
+<p>反正就，加了如下内容在汇编的开始，用于表示外部定义的函数</p>
+<pre class="language-none"><code class="language-none">      EXPORT  OSStartHighRdy               
+      EXPORT  OSCtxSw
+      EXPORT  OSIntCtxSw
+EXPORT  OS_CPU_SR_Save
+  	EXPORT  OS_CPU_SR_Restore </code></pre>
+<p>然后。。ohhhhhhhh成功了！！！！！！！！</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612697.png" alt="image-20210310011509362" / loading="lazy"></p>
+<p>这里补一句，我们需要在魔术棒的c/c++选项中加入两个宏定义用于帮助编译</p>
+<pre class="language-none"><code class="language-none">STM32F401xx</code></pre>
+<p>这里的第一个宏是用作帮助启动文件确定板子类型的。</p>
+<h3 id="工程验证"><a class="markdownIt-Anchor" href="#工程验证"></a> 工程验证</h3>
+<p>接下来的部分并不在学习计划内，只是为了能够验证下工程建立有无问题，很多东西不会过多解释，直接直接跳过也行。</p>
+<p>因为也包含了自己很多的试错过程，不建议更着做，建议先看完。</p>
+<p>接下来我们开始点灯，由于懒，我们直接把stm官方提供的lib加入工程（其中stm32f4xx_fmc.c和stm32f4xx_fsmc.c不能加入工程会有未定义的函数，且我没找到他的定义在什么位置），并在BSP/inc里添加所需的头文件，文件如下</p>
+<p><img src="https://gitee.com/fffyutt/img/raw/blog/img/202202261612158.png" alt="image-20210310212233524" / loading="lazy"></p>
+<p>并在魔术棒c\c++中添加一个宏</p>
+<pre class="language-none"><code class="language-none">STM32F401xx,USE_STDPERIPH_DRIVER</code></pre>
+<p>第二个是启用官方库的，后续可能会放弃使用官方库，记得把第二个宏删掉。</p>
+<p>主函数如下</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"../CONFIG/includes.h"</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"misc.h"</span></span>
+
+
+<span class="token comment">//设置任务优先级</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">LED_TASK_PRIO</span>			<span class="token expression"><span class="token number">7</span></span></span>
+<span class="token comment">//设置任务堆栈大小</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">LED_STK_SIZE</span>			<span class="token expression"><span class="token number">128</span></span></span>
+<span class="token comment">//任务堆栈</span>
+OS_STK LED_TASK_STK<span class="token punctuation">[</span>LED_STK_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">//任务函数</span>
+<span class="token keyword">void</span> <span class="token function">LED_task</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>pdata<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+    u32 reload<span class="token punctuation">;</span>
+    u8 SYSCLK <span class="token operator">=</span> <span class="token number">84</span><span class="token punctuation">;</span>
+    <span class="token function">SysTick_CLKSourceConfig</span><span class="token punctuation">(</span>SysTick_CLKSource_HCLK_Div8<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    reload<span class="token operator">=</span>SYSCLK<span class="token operator">/</span><span class="token number">8</span><span class="token punctuation">;</span>						<span class="token comment">//每秒钟的计数次数 单位为M	   </span>
+    reload<span class="token operator">*=</span><span class="token number">1000000</span><span class="token operator">/</span>OS_TICKS_PER_SEC<span class="token punctuation">;</span>	<span class="token comment">//根据delay_ostickspersec设定溢出时间</span>
+						<span class="token comment">//reload为24位寄存器,最大值:16777216,在168M下,约合0.7989s左右	</span>
+    SysTick<span class="token operator">-></span>CTRL<span class="token operator">|=</span>SysTick_CTRL_TICKINT_Msk<span class="token punctuation">;</span>   	<span class="token comment">//开启SYSTICK中断</span>
+    SysTick<span class="token operator">-></span>LOAD<span class="token operator">=</span>reload<span class="token punctuation">;</span> 				<span class="token comment">//每1/delay_ostickspersec秒中断一次	</span>
+    SysTick<span class="token operator">-></span>CTRL<span class="token operator">|=</span>SysTick_CTRL_ENABLE_Msk<span class="token punctuation">;</span> 	<span class="token comment">//开启SYSTICK    </span>
+    <span class="token function">OSInit</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">OSTaskCreate</span><span class="token punctuation">(</span>LED_task<span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token punctuation">(</span>OS_STK<span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>LED_TASK_STK<span class="token punctuation">[</span>LED_STK_SIZE<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span>LED_TASK_PRIO<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">OSStart</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">LED_task</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>pdata<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+       GPIO_InitTypeDef  GPIO_InitStructure<span class="token punctuation">;</span>
+      
+       <span class="token function">RCC_AHB1PeriphClockCmd</span><span class="token punctuation">(</span>RCC_AHB1Periph_GPIOA<span class="token punctuation">,</span>ENABLE<span class="token punctuation">)</span><span class="token punctuation">;</span>   
+       GPIO_InitStructure<span class="token punctuation">.</span>GPIO_Pin <span class="token operator">=</span> GPIO_Pin_5<span class="token punctuation">;</span>
+       GPIO_InitStructure<span class="token punctuation">.</span>GPIO_Mode <span class="token operator">=</span> GPIO_Mode_OUT<span class="token punctuation">;</span>
+       GPIO_InitStructure<span class="token punctuation">.</span>GPIO_OType <span class="token operator">=</span>GPIO_OType_PP<span class="token punctuation">;</span>
+       GPIO_InitStructure<span class="token punctuation">.</span>GPIO_Speed <span class="token operator">=</span>GPIO_Speed_100MHz<span class="token punctuation">;</span>
+       GPIO_InitStructure<span class="token punctuation">.</span>GPIO_PuPd <span class="token operator">=</span>GPIO_PuPd_NOPULL<span class="token punctuation">;</span>
+      
+       <span class="token function">GPIO_Init</span><span class="token punctuation">(</span>GPIOA<span class="token punctuation">,</span><span class="token operator">&amp;</span>GPIO_InitStructure<span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token function">GPIO_ResetBits</span><span class="token punctuation">(</span>GPIOA<span class="token punctuation">,</span>GPIO_Pin_5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      
+       <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+       <span class="token punctuation">&#123;</span>              
+              <span class="token function">GPIO_SetBits</span><span class="token punctuation">(</span>GPIOA<span class="token punctuation">,</span>GPIO_Pin_5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token punctuation">&#125;</span>     
+<span class="token punctuation">&#125;</span></code></pre>
+<p>这个时候，编译过了，下载进板子，毫无反应。。（代码拿去我移植好的系统试过的，是没问题的）</p>
+<p>接下来就是痛苦的实验时刻，从现在开始，就几乎没有building的报错可以参考了，因为我之前已经有了一个照搬别人移植好的工程，所以会简单一点，不然，怎么死都不知道的</p>
+<p>研究了下OSInit()和OSStart()的逻辑，发现用到了汇编里定义的5个函数，还新增两个函数，修改如下</p>
+<pre class="language-none"><code class="language-none">		IMPORT  OSRunning               ; External references
+        IMPORT  OSPrioCur
+        IMPORT  OSPrioHighRdy
+        IMPORT  OSTCBCur
+        IMPORT  OSTCBHighRdy
+        IMPORT  OSIntNesting
+        IMPORT  OSIntExit
+        IMPORT  OSTaskSwHook
+           
+        EXPORT  OSStartHighRdy               
+        EXPORT  OSCtxSw
+        EXPORT  OSIntCtxSw
+		EXPORT  OS_CPU_SR_Save                                      ; Functions declared in this file
+    	EXPORT  OS_CPU_SR_Restore       
+        EXPORT  OS_CPU_PendSVHandler
+        	
+     
+NVIC_INT_CTRL   	EQU     0xE000ED04  
+NVIC_SYSPRI2    	EQU     0xE000ED22  
+NVIC_PENDSV_PRI 	EQU         0xFFFF  
+                                        
+NVIC_PENDSVSET  	EQU     0x10000000  
+
+		PRESERVE8 
+		
+		AREA    |.text|, CODE, READONLY
+        THUMB 
+
+OS_CPU_SR_Save
+		MRS     R0, PRIMASK  	
+		CPSID   I				
+		BX      LR			    
+
+OS_CPU_SR_Restore
+		MSR     PRIMASK, R0	   	
+		BX      LR				
+
+OSStartHighRdy
+        LDR     R4, &#x3D;NVIC_SYSPRI2      ; set the PendSV exception priority
+        LDR     R5, &#x3D;NVIC_PENDSV_PRI
+        STR     R5, [R4]
+
+        MOV     R4, #0                 ; set the PSP to 0 for initial context switch call
+        MSR     PSP, R4
+
+        LDR     R4, &#x3D;OSRunning         ; OSRunning &#x3D; TRUE
+        MOV     R5, #1
+        STRB    R5, [R4]
+
+                                       
+        LDR     R4, &#x3D;NVIC_INT_CTRL     ;rigger the PendSV exception (causes context switch)
+        LDR     R5, &#x3D;NVIC_PENDSVSET
+        STR     R5, [R4]
+
+        CPSIE   I                      ;enable interrupts at processor level
+OSStartHang
+        B       OSStartHang            ;should never get here
+	
+OSCtxSw
+		PUSH    &#123;R4, R5&#125;
+        LDR     R4, &#x3D;NVIC_INT_CTRL  	;PendSV (causes context switch)
+        LDR     R5, &#x3D;NVIC_PENDSVSET
+        STR     R5, [R4]
+		POP     &#123;R4, R5&#125;
+        BX      LR
+
+OSIntCtxSw
+		PUSH    &#123;R4, R5&#125;
+        LDR     R4, &#x3D;NVIC_INT_CTRL      ;PendSV (causes context switch)
+        LDR     R5, &#x3D;NVIC_PENDSVSET
+        STR     R5, [R4]
+		POP     &#123;R4, R5&#125;
+        BX      LR
+        NOP
+
+OS_CPU_PendSVHandler
+		CPSID   I                                         ; Prevent interruption during context switch
+		MRS     R0, PSP                                             ; PSP is process stack pointer
+		CBZ     R0, OS_CPU_PendSVHandler_nosave		                    ; Skip register save the first time
+		
+		;Is the task using the FPU context? If so, push high vfp registers.
+		TST 	R14, #0x10
+		IT 		EQ
+		VSTMDBEQ R0!, &#123;S16-S31&#125; 
+		
+		SUBS    R0, R0, #0x20                              ; Save remaining regs r4-11 on process stack
+		STM     R0, &#123;R4-R11&#125;
+		
+		LDR     R1, &#x3D;OSTCBCur                                       ; OSTCBCur-&gt;OSTCBStkPtr &#x3D; SP;
+		LDR     R1, [R1]
+		STR     R0, [R1]                                            ; R0 is SP of process being switched out
+
+                                             ; At this point, entire context of process has been saved
+OS_CPU_PendSVHandler_nosave
+		PUSH    &#123;R14&#125;                                               ; Save LR exc_return value
+		LDR     R0, &#x3D;OSTaskSwHook                                   ; OSTaskSwHook();
+		BLX     R0
+		POP     &#123;R14&#125; 
+
+		LDR     R0, &#x3D;OSPrioCur                                      ; OSPrioCur &#x3D; OSPrioHighRdy;
+		LDR     R1, &#x3D;OSPrioHighRdy
+		LDRB    R2, [R1]
+		STRB    R2, [R0]
+
+		LDR     R0, &#x3D;OSTCBCur                                       ; OSTCBCur  &#x3D; OSTCBHighRdy;
+		LDR     R1, &#x3D;OSTCBHighRdy
+		LDR     R2, [R1]
+		STR     R2, [R0]
+
+		LDR     R0, [R2]                            ; R0 is new process SP; SP &#x3D; OSTCBHighRdy-&gt;OSTCBStkPtr;
+		LDM     R0, &#123;R4-R11&#125;                                        ; Restore r4-11 from new process stack
+		ADDS    R0, R0, #0x20
+
+		;Is the task using the FPU context? If so, push high vfp registers.
+		TST 	R14, #0x10
+		IT 		EQ
+		VLDMIAEQ R0!, &#123;S16-S31&#125; 
+		
+		MSR     PSP, R0                                             ; Load PSP with new process SP
+		ORR     LR, LR, #0x04                                  ; Ensure exception return uses process stack
+		CPSIE   I
+		BX      LR                            ; Exception return will restore remaining context
+		NOP
+		end</code></pre>
+<p>经过测试，将其中的任一文件删除程序都无法正常运行(可能是我不会表示汇编的函数如何结束)，但是可以将OS_CPU_PendSVHandler的内容删去，原因为此函数的任务为保存上文，在首次调用时的唯一作用是调用OS_CPU_PendSVHandler_nosave，而OS_CPU_PendSVHandler_nosave正好在OS_CPU_PendSVHandler下面，如果将OS_CPU_PendSVHandler内容删去，函数将继续执行OS_CPU_PendSVHandler_nosave，实际上正确，但是逻辑上错误。</p>
+<p>然后上面作废，研究了一下函数的作用，其中OS_CPU_SR_Save和OS_CPU_SR_RESTORE是用作进出临界段的，我们简单的程序不需要这些，直接改成空函数也不会出问题，同理可以修改OSCtxSw与OSIntCtxSw，因为没有任务切换，而OSStartHighRdy是在系统初始化时找到最高优先级的任务用，其中会调用OS_CPU_PendSVHandler，因为是第一次调用，直接进入OS_CPU_PendSVHandler_nosave切换下文，所以最终保留了两段函数用于最小系统的验证（其实是能力不足，再改下去对代码结构的修改就太大了，不值得了）</p>
+<p>将汇编文件修改为下</p>
+<pre class="language-none"><code class="language-none">		IMPORT  OSRunning               ; External references
+        IMPORT  OSPrioCur
+        IMPORT  OSPrioHighRdy
+        IMPORT  OSTCBCur
+        IMPORT  OSTCBHighRdy
+        IMPORT  OSIntNesting
+        IMPORT  OSIntExit
+        IMPORT  OSTaskSwHook
+           
+        EXPORT  OSStartHighRdy               
+        EXPORT  OSCtxSw
+        EXPORT  OSIntCtxSw
+		EXPORT  OS_CPU_SR_Save                                      ; Functions declared in this file
+    	EXPORT  OS_CPU_SR_Restore       
+        EXPORT  OS_CPU_PendSVHandler
+        	
+     
+NVIC_INT_CTRL   	EQU     0xE000ED04  ; 中断控制寄存器
+NVIC_SYSPRI2    	EQU     0xE000ED22  ; 系统优先级寄存器(2)
+NVIC_PENDSV_PRI 	EQU         0xFFFF  ; PendSV中断和系统节拍中断
+                                        ; (都为最低，0xff).
+NVIC_PENDSVSET  	EQU     0x10000000  ; 触发软件中断的值.
+
+
+		PRESERVE8 
+		
+		AREA    |.text|, CODE, READONLY
+        THUMB 
+
+OS_CPU_SR_Save
+    BX      LR			    ;返回
+
+OS_CPU_SR_Restore
+    BX      LR				;返回
+
+OSStartHighRdy
+        LDR     R4, &#x3D;NVIC_SYSPRI2      ; set the PendSV exception priority
+        LDR     R5, &#x3D;NVIC_PENDSV_PRI
+        STR     R5, [R4]
+
+        MOV     R4, #0                 ; set the PSP to 0 for initial context switch call
+        MSR     PSP, R4
+
+        LDR     R4, &#x3D;OSRunning         ; OSRunning &#x3D; TRUE
+        MOV     R5, #1
+        STRB    R5, [R4]
+
+                                       ;切换到最高优先级的任务
+        LDR     R4, &#x3D;NVIC_INT_CTRL     ;rigger the PendSV exception (causes context switch)
+        LDR     R5, &#x3D;NVIC_PENDSVSET
+        STR     R5, [R4]
+
+        CPSIE   I                      ;enable interrupts at processor level
+  
+OSCtxSw
+        BX      LR
+
+OSIntCtxSw
+        BX      LR
+
+OS_CPU_PendSVHandler
+
+OS_CPU_PendSVHandler_nosave
+    LDR     R0, &#x3D;OSPrioCur                                      ; OSPrioCur &#x3D; OSPrioHighRdy;
+    LDR     R1, &#x3D;OSPrioHighRdy
+    LDRB    R2, [R1]
+    STRB    R2, [R0]
+
+    LDR     R0, &#x3D;OSTCBCur                                       ; OSTCBCur  &#x3D; OSTCBHighRdy;
+    LDR     R1, &#x3D;OSTCBHighRdy
+    LDR     R2, [R1]
+    STR     R2, [R0]
+
+    LDR     R0, [R2]                                            ; R0 is new process SP; SP &#x3D; OSTCBHighRdy-&gt;OSTCBStkPtr;
+    LDM     R0, &#123;R4-R11&#125;                                        ; Restore r4-11 from new process stack
+    ADDS    R0, R0, #0x20
+
+	;Is the task using the FPU context? If so, push high vfp registers.
+	TST 	R14, #0x10
+	IT 		EQ
+	VLDMIAEQ R0!, &#123;S16-S31&#125; 
+		
+	MSR     PSP, R0                                             ; Load PSP with new process SP
+    ORR     LR, LR, #0x04                                       ; Ensure exception return uses process stack
+    CPSIE   I
+    BX      LR                                                  ; Exception return will restore remaining context
+	NOP
+    end  </code></pre>
+<p>此外需要在os_cpu_c.c内补充OSTaskStkInit(),经过测试删去不行，该函数的作用为初始化任务堆栈，模拟第一次压栈，将寄存器初始化，不得删除。</p>
+<pre class="language-none"><code class="language-none">OS_STK *OSTaskStkInit (void (*task)(void *p_arg), void *p_arg, OS_STK *ptos, INT16U opt)
+&#123;
+    OS_STK *stk;
+
+    (void)opt;                                   &#x2F;* &#39;opt&#39; is not used, prevent warning                 *&#x2F;
+    stk       &#x3D; ptos;                            &#x2F;* Load stack pointer                                 *&#x2F;
+
+#if (__FPU_PRESENT&#x3D;&#x3D;1)&amp;&amp;(__FPU_USED&#x3D;&#x3D;1)	
+	*(--stk) &#x3D; (INT32U)0x00000000L; &#x2F;&#x2F;No Name Register  
+	*(--stk) &#x3D; (INT32U)0x00001000L; &#x2F;&#x2F;FPSCR
+	*(--stk) &#x3D; (INT32U)0x00000015L; &#x2F;&#x2F;s15
+	*(--stk) &#x3D; (INT32U)0x00000014L; &#x2F;&#x2F;s14
+	*(--stk) &#x3D; (INT32U)0x00000013L; &#x2F;&#x2F;s13
+	*(--stk) &#x3D; (INT32U)0x00000012L; &#x2F;&#x2F;s12
+	*(--stk) &#x3D; (INT32U)0x00000011L; &#x2F;&#x2F;s11
+	*(--stk) &#x3D; (INT32U)0x00000010L; &#x2F;&#x2F;s10
+	*(--stk) &#x3D; (INT32U)0x00000009L; &#x2F;&#x2F;s9
+	*(--stk) &#x3D; (INT32U)0x00000008L; &#x2F;&#x2F;s8
+	*(--stk) &#x3D; (INT32U)0x00000007L; &#x2F;&#x2F;s7
+	*(--stk) &#x3D; (INT32U)0x00000006L; &#x2F;&#x2F;s6
+	*(--stk) &#x3D; (INT32U)0x00000005L; &#x2F;&#x2F;s5
+	*(--stk) &#x3D; (INT32U)0x00000004L; &#x2F;&#x2F;s4
+	*(--stk) &#x3D; (INT32U)0x00000003L; &#x2F;&#x2F;s3
+	*(--stk) &#x3D; (INT32U)0x00000002L; &#x2F;&#x2F;s2
+	*(--stk) &#x3D; (INT32U)0x00000001L; &#x2F;&#x2F;s1
+	*(--stk) &#x3D; (INT32U)0x00000000L; &#x2F;&#x2F;s0
+#endif
+                                                 &#x2F;* Registers stacked as if auto-saved on exception    *&#x2F;
+    *(stk)    &#x3D; (INT32U)0x01000000L;             &#x2F;* xPSR                                               *&#x2F;
+    *(--stk)  &#x3D; (INT32U)task;                    &#x2F;* Entry Point                                        *&#x2F;
+    *(--stk)  &#x3D; (INT32U)OS_TaskReturn;           &#x2F;* R14 (LR) (init value will cause fault if ever used)*&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x12121212L;             &#x2F;* R12                                                *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x03030303L;             &#x2F;* R3                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x02020202L;             &#x2F;* R2                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x01010101L;             &#x2F;* R1                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)p_arg;                   &#x2F;* R0 : argument                                      *&#x2F;
+
+#if (__FPU_PRESENT&#x3D;&#x3D;1)&amp;&amp;(__FPU_USED&#x3D;&#x3D;1)	
+	*(--stk) &#x3D; (INT32U)0x00000031L; &#x2F;&#x2F;s31
+	*(--stk) &#x3D; (INT32U)0x00000030L; &#x2F;&#x2F;s30
+	*(--stk) &#x3D; (INT32U)0x00000029L; &#x2F;&#x2F;s29
+	*(--stk) &#x3D; (INT32U)0x00000028L; &#x2F;&#x2F;s28
+	*(--stk) &#x3D; (INT32U)0x00000027L; &#x2F;&#x2F;s27
+	*(--stk) &#x3D; (INT32U)0x00000026L; &#x2F;&#x2F;s26	
+	*(--stk) &#x3D; (INT32U)0x00000025L; &#x2F;&#x2F;s25
+	*(--stk) &#x3D; (INT32U)0x00000024L; &#x2F;&#x2F;s24
+	*(--stk) &#x3D; (INT32U)0x00000023L; &#x2F;&#x2F;s23
+	*(--stk) &#x3D; (INT32U)0x00000022L; &#x2F;&#x2F;s22
+	*(--stk) &#x3D; (INT32U)0x00000021L; &#x2F;&#x2F;s21
+	*(--stk) &#x3D; (INT32U)0x00000020L; &#x2F;&#x2F;s20
+	*(--stk) &#x3D; (INT32U)0x00000019L; &#x2F;&#x2F;s19
+	*(--stk) &#x3D; (INT32U)0x00000018L; &#x2F;&#x2F;s18
+	*(--stk) &#x3D; (INT32U)0x00000017L; &#x2F;&#x2F;s17
+	*(--stk) &#x3D; (INT32U)0x00000016L; &#x2F;&#x2F;s16
+#endif
+		
+                                                &#x2F;* Remaining registers saved on process stack         *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x11111111L;             &#x2F;* R11                                                *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x10101010L;             &#x2F;* R10                                                *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x09090909L;             &#x2F;* R9                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x08080808L;             &#x2F;* R8                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x07070707L;             &#x2F;* R7                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x06060606L;             &#x2F;* R6                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x05050505L;             &#x2F;* R5                                                 *&#x2F;
+    *(--stk)  &#x3D; (INT32U)0x04040404L;             &#x2F;* R4                                                 *&#x2F;
+
+    return (stk);
+&#125;</code></pre>
+<p>为了确保systick正常运作,我们需要将汇编中定义的中断函数与在startup_stm32f401xx.s定义的中断联系起来，有两个方案</p>
+<p>方法一（比较麻烦但是比较容易理解中断的含义）:</p>
+<ol>
+<li>将启动文件中startup_stm32f401xx.s的所有“PendSV_Handler”和“SysTick_Handler”，替换成“OS_CPU_PendSVHandler”和“OS_CPU_SysTickHandler”</li>
+<li>将stm32f4xx_it.c文件中的中断函数名称做同样修改，并注释PendSV_Handler函数（已经在汇编中是实现了）</li>
+</ol>
+<p>PS:我第一次认真去看启动文件,我发现这里定义了上学期我们用到控制电机的中断向量,所以我猜测中断向量表是在这里定义的,而stm32f4xx_it.c文件中则定义了中断函数的初始内容,我们可以直接修改这部分代码不用重定向中断函数内容也可以控制电机(我暂时还没有实践过)</p>
+<p>方法二（个人推荐，最终也是采用的这种方案）:</p>
+<p>os_cpu_a.asm里所有的OS_CPU_PendSVHandler改成PendSV_Handler  ，并注释stm32f4xx_it.c文件中的PendSV_Handler函数</p>
+<p>这种做法的理由是,在系统移植过程中,移植的系统,应该尽可能少的修改启动文件之类的板子本身启动文件</p>
+<p><strong>接下来这步是没有必要的,可以直接跳过,这个时候编译下载就已经可以把stm32f401RE板子上的led2电亮了</strong></p>
+<p>最后我们修改stm32f4xx_it.c文件中的SysTick_Handler函数，作为每次触发心跳时的执行代码，如下</p>
+<pre class="language-none"><code class="language-none">void SysTick_Handler(void)&#123;    
+	if(OSRunning&#x3D;&#x3D;1)&#123; &#x2F;&#x2F;当os开始运行才跑这个        
+	OSIntEnter(); &#x2F;&#x2F;进入中断        
+	OSTimeTick(); &#x2F;&#x2F;调用ucos的时钟服务器        
+	OSIntExit();  &#x2F;&#x2F;触发任务切换软中    
+	&#125;
+&#125;</code></pre>
+<p>经过研究，上面这步没有必要，因为我们的系统中没有任务调度，直接进入电灯程序然后系统的心跳的有无不影响电灯。</p>
+<p>然后，编译下载，恭喜！</p>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-hand-coin-line"></use></svg></span><div id="reward-comment">我很可爱，请给我钱</div><div id="qr" style="display:none;"><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://gitee.com/fffyutt/img/raw/blog/img/202202280020498.jpg"><img loading="lazy" src="https://gitee.com/fffyutt/img/raw/blog/img/202202280020498.jpg" alt="支付宝" title="支付宝"></a><div><span style="color:#00A3EE"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-alipay-line"></use></svg></span></div></div><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://gitee.com/fffyutt/img/raw/blog/img/202202280021331.jpg"><img loading="lazy" src="https://gitee.com/fffyutt/img/raw/blog/img/202202280021331.jpg" alt="微信支付" title="微信支付"></a><div><span style="color:#2DC100"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-pay-line"></use></svg></span></div></div></div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>语冰</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://feutis.github.io/ucosii/ucosii1/" title="ucosii学习1-骗过编译器">http://feutis.github.io/ucosii/ucosii1/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/%E5%89%8D%E7%AB%AF/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="js学习笔记"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-left-s-line"></use></svg><span class="post-nav-text">js学习笔记</span></a></div><div class="post-nav-item"></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2021 – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> 语冰</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.0.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.8.10</span></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div><!-- hexo injector body_end start --><script src="/js/hexo-tag-common.js"></script><!-- hexo injector body_end end --></body></html>
