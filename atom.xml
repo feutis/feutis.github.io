@@ -6,7 +6,7 @@
   <link href="http://feutis.github.io/atom.xml" rel="self"/>
   
   <link href="http://feutis.github.io/"/>
-  <updated>2022-02-27T16:33:25.466Z</updated>
+  <updated>2022-03-03T15:25:55.699Z</updated>
   <id>http://feutis.github.io/</id>
   
   <author>
@@ -17,11 +17,53 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>linux GNU arm开发环境搭建</title>
+    <link href="http://feutis.github.io/arm/linux-GNU-arm%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <id>http://feutis.github.io/arm/linux-GNU-arm%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</id>
+    <published>2021-04-29T15:24:58.000Z</published>
+    <updated>2022-03-03T15:25:55.699Z</updated>
+    
+    
+    <summary type="html">一直使用所谓的集成开发环境，一键完成各种事情看起来是很方便，但是会让我们对程序是如何编译链接的毫无了解，当我们想从类似keil或者DS5这种集成开发环境脱离的时候，终于发现了自己的一无所知。记录下我脱离keil，使用vscode搭建自己的linux arm开发环境的过程吧。</summary>
+    
+    
+    
+    <category term="linux" scheme="http://feutis.github.io/categories/linux/"/>
+    
+    
+    <category term="arm" scheme="http://feutis.github.io/tags/arm/"/>
+    
+    <category term="GNU" scheme="http://feutis.github.io/tags/GNU/"/>
+    
+    <category term="linux" scheme="http://feutis.github.io/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>makefile</title>
+    <link href="http://feutis.github.io/arm/makefile/"/>
+    <id>http://feutis.github.io/arm/makefile/</id>
+    <published>2021-04-28T17:00:44.000Z</published>
+    <updated>2022-03-03T15:25:38.884Z</updated>
+    
+    
+    <summary type="html">makefile的学习记录</summary>
+    
+    
+    
+    <category term="tools" scheme="http://feutis.github.io/categories/tools/"/>
+    
+    
+    <category term="makefile gun" scheme="http://feutis.github.io/tags/makefile-gun/"/>
+    
+  </entry>
+  
+  <entry>
     <title>hexo blog搭建方案</title>
     <link href="http://feutis.github.io/%E5%89%8D%E7%AB%AF/hexo-blog%E6%90%AD%E5%BB%BA%E6%96%B9%E6%A1%88/"/>
     <id>http://feutis.github.io/%E5%89%8D%E7%AB%AF/hexo-blog%E6%90%AD%E5%BB%BA%E6%96%B9%E6%A1%88/</id>
     <published>2022-02-27T16:33:20.000Z</published>
-    <updated>2022-02-27T16:33:25.466Z</updated>
+    <updated>2022-03-03T15:25:26.575Z</updated>
     
     
     <summary type="html">在windows中采用wsl（不好用，已弃用）+（typora markdown编辑）+（picgo gitee图床）+（katex公式）+（github发布）的blog解决方案</summary>
@@ -73,9 +115,9 @@
     <category term="ucosii" scheme="http://feutis.github.io/categories/ucosii/"/>
     
     
-    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
-    
     <category term="stm32" scheme="http://feutis.github.io/tags/stm32/"/>
+    
+    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
     
     <category term="学习笔记" scheme="http://feutis.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     
@@ -96,9 +138,9 @@
     <category term="ucosii" scheme="http://feutis.github.io/categories/ucosii/"/>
     
     
-    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
-    
     <category term="stm32" scheme="http://feutis.github.io/tags/stm32/"/>
+    
+    <category term="ucosii" scheme="http://feutis.github.io/tags/ucosii/"/>
     
     <category term="学习笔记" scheme="http://feutis.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     
@@ -141,25 +183,6 @@
     <category term="arm" scheme="http://feutis.github.io/tags/arm/"/>
     
     <category term="linker script" scheme="http://feutis.github.io/tags/linker-script/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>makefile</title>
-    <link href="http://feutis.github.io/arm/makefile/"/>
-    <id>http://feutis.github.io/arm/makefile/</id>
-    <published>2021-04-28T17:00:44.000Z</published>
-    <updated>2022-02-25T15:18:12.347Z</updated>
-    
-    
-    <summary type="html">makefile的学习记录</summary>
-    
-    
-    
-    <category term="tools" scheme="http://feutis.github.io/categories/tools/"/>
-    
-    
-    <category term="makefile gun" scheme="http://feutis.github.io/tags/makefile-gun/"/>
     
   </entry>
   
